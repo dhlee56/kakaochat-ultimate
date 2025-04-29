@@ -48,28 +48,67 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // const timestampRegex = /^\d{4}년 \d{1,2}월 \d{1,2}일/;
     const timestampRegex = /^\d{4}년 \d{1,2}월 \d{1,2}일( 오[전후] \d{1,2}:\d{2})?/;
 
+    // Define a data type to hold message details
+    type MessageDetails = {
+      author: string;
+      content: (string | { uri?: string; imageFileName?: string })[];
+    };
+
     lines.forEach((line) => {
       console.log("Processing line:", line);
       const match = line.match(timestampRegex);
       if (match) {
-        const timestamp = match[0];
-        // const [date] = timestamp.split(" ");
+        const timestamp = match[0].replace(",", ""); // Remove comma after timestamp
+        const remainingText = line.replace(match[0], "").trim();
+
+        // Extract author and message
+        const [authorPart, ...messageParts] = remainingText.split(":").map((part) => part.trim());
+        const author = authorPart; // Remove colon after author naturally during split
+        const message = messageParts.join(":").trim();
+
+        // Determine if the message contains URIs or image file names
+        const uriRegex = /(https?:\/\/[^\s]+)/g;
+        const imageRegex = /\.(jpg|jpeg|png|gif)$/i;
+
+        const content: (string | { uri?: string; imageFileName?: string })[] = [];
+        const uriMatches = message.match(uriRegex);
+        const imageMatches = message.match(imageRegex);
+
+        // Add the entire message as plain text
+        content.push(message);
+
+        // Add URIs if found
+        if (uriMatches) {
+          uriMatches.forEach((uri) => content.push({ uri }));
+        }
+
+        // Add image file names if found
+        if (imageMatches) {
+          imageMatches.forEach((imageFileName) => content.push({ imageFileName }));
+        }
+
+        const messageDetails: MessageDetails = {
+          author,
+          content,
+        };
+
         const date = timestamp;
-        const message = line.replace(timestamp, "").trim();
 
         if (!messagesByDate[date]) {
           messagesByDate[date] = new Set();
         }
 
-        messagesByDate[date].add(message);
+        // Include the parsed message details in the result
+        messagesByDate[date].add(JSON.stringify(messageDetails));
       }
     });
 
-    console.log("Messages by date:", messagesByDate);
-
     // Convert Set to Array for JSON serialization
     const result = Object.fromEntries(
-      Object.entries(messagesByDate).map(([date, messages]) => [date, Array.from(messages)])
+      Object.entries(messagesByDate).map(([date, messages]) => [
+        date,
+        Array.from(messages).map((msg) => JSON.parse(msg)),
+      ])
     );
 
     console.log("Result:", result);
