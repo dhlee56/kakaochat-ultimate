@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [message, setMessage] = useState("");
-  const [chatMessages, setChatMessages] = useState<Record<string, { author: string; content: (string | { uri?: string; imageFileName?: string })[] }[]>>({});
+  const [chatMessages, setChatMessages] = useState<Record<string, string[]>>({});
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -57,24 +57,7 @@ export default function Home() {
             <h2>{date}</h2>
             <ul>
               {messages.map((msg, index) => (
-                <li key={index}>
-                  <strong>{msg.author}:</strong>
-                  <ul>
-                    {msg.content.map((item, idx) => (
-                      <li key={idx}>
-                        {typeof item === "string" && item}
-                        {typeof item === "object" && item.uri && (
-                          <a href={item.uri} target="_blank" rel="noopener noreferrer">
-                            {item.uri}
-                          </a>
-                        )}
-                        {typeof item === "object" && item.imageFileName && (
-                          <span>{item.imageFileName}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
+                <li key={index}>{msg}</li>
               ))}
             </ul>
           </div>
