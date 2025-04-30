@@ -43,14 +43,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const fileContent = fs.readFileSync(textFilePath, "utf-8");
     const lines = fileContent.split("\n").map((line) => line.trim()).filter(Boolean);
 
-    // Extract the first two lines as the title
-    const title = lines.slice(0, 2).join(" ");
-    const messageLines = lines.slice(2); // Remaining lines for processing messages
-
-    console.log("Title:", title);
-    console.log("Message Lines:", messageLines);
-
+    console.log(lines)
     const messagesByDate: Record<string, Set<string>> = {};
+    // const timestampRegex = /^\d{4}년 \d{1,2}월 \d{1,2}일/;
     const timestampRegex = /^\d{4}년 \d{1,2}월 \d{1,2}일( 오[전후] \d{1,2}:\d{2})?/;
 
     // Define a data type to hold message details
@@ -59,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       content: (string | { uri?: string; imageFileName?: string })[];
     };
 
-    messageLines.forEach((line) => {
+    lines.forEach((line) => {
       console.log("Processing line:", line);
       const match = line.match(timestampRegex);
       if (match) {
@@ -105,8 +100,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Include the parsed message details in the result
         messagesByDate[date].add(JSON.stringify(messageDetails));
-      } else {
-        console.log("No timestamp match for line:", line);
       }
     });
 
@@ -119,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     console.log("Result:", result);
-    return res.status(200).json({ title, messages: result });
+    return res.status(200).json(result);
   } catch (error) {
     console.error("Error reading chat messages:", error);
     return res.status(500).json({ message: "Error reading chat messages" });
