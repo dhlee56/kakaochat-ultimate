@@ -4,7 +4,10 @@ import { useState } from "react";
 
 export default function Home() {
   const [message, setMessage] = useState("");
-  const [chatMessages, setChatMessages] = useState<Record<string, { author: string; content: (string | { uri?: string; imageFileName?: string })[] }[]>>({});
+  const [chatMessages, setChatMessages] = useState<{
+    title?: string;
+    messages?: Record<string, { author: string; content: (string | { uri?: string; imageFileName?: string })[] }[]>;
+  }>({});
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -47,39 +50,34 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Upload and Unzip</h1>
-      <input type="file" accept=".zip" onChange={handleFileUpload} />
-      <button onClick={handleDisplayMessages}>Display Chat Messages</button>
-      <p>{message}</p>
-      <div>
-        {Object.entries(chatMessages).map(([date, messages]) => (
-          <div key={date}>
-            <h2>{date}</h2>
-            <ul>
-              {messages.map((msg, index) => (
-                <li key={index}>
-                  <strong>{msg.author}:</strong>
-                  <ul>
-                    {msg.content.map((item, idx) => (
-                      <li key={idx}>
-                        {typeof item === "string" && item}
-                        {typeof item === "object" && item.uri && (
-                          <a href={item.uri} target="_blank" rel="noopener noreferrer">
-                            {item.uri}
-                          </a>
-                        )}
-                        {typeof item === "object" && item.imageFileName && (
-                          <span>{item.imageFileName}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+      <h1>{chatMessages.title}</h1> {/* Display the title */}
+      {Object.entries(chatMessages.messages).map(([date, messages]) => (
+            {messages.map((msg: { author: string; content: (string | { uri?: string; imageFileName?: string })[] }, index) => (
+          <h2>{date}</h2>
+          <ul>
+            {messages.map((msg, index) => (
+              <li key={index}>
+                <strong>{msg.author}:</strong>
+                <ul>
+                  {msg.content.map((item, idx) => (
+                    <li key={idx}>
+                      {typeof item === "string" && item}
+                      {typeof item === "object" && item.uri && (
+                        <a href={item.uri} target="_blank" rel="noopener noreferrer">
+                          {item.uri}
+                        </a>
+                      )}
+                      {typeof item === "object" && item.imageFileName && (
+                        <span>{item.imageFileName}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }
