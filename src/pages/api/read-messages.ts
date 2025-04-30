@@ -55,10 +55,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const messagesByDate: Record<string, Set<string>> = {};
     const timestampRegex = /^\d{4}년 \d{1,2}월 \d{1,2}일( 오[전후] \d{1,2}:\d{2})?/;
 
+    let currentDate: string | null = null; // Variable to track the current date
+    let currentMessage: string | null = null; // Variable to track the current message
+
     messageLines.forEach((line) => {
       console.log("Processing line:", line);
       const match = line.match(timestampRegex);
+
       if (match) {
+        // Line contains a timestamp
         const timestamp = match[0];
         const date = timestamp;
         const message = line.replace(timestamp, "").trim();
@@ -67,7 +72,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           messagesByDate[date] = new Set();
         }
 
+        // Add the message to the current date's record
         messagesByDate[date].add(message);
+
+        // Update the current date and message
+        currentDate = date;
+        currentMessage = message;
+      } else if (currentDate) {
+        // Line does not contain a timestamp, add it as a new message
+        const newMessage = line.trim();
+
+        if (newMessage) {
+          // Add the new message to the current date's record
+          messagesByDate[currentDate].add(newMessage);
+        }
       }
     });
 
