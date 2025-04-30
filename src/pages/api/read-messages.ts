@@ -43,17 +43,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const fileContent = fs.readFileSync(textFilePath, "utf-8");
     const lines = fileContent.split("\n").map((line) => line.trim()).filter(Boolean);
 
-    console.log(lines)
+    // Extract the first two lines as the heading and saved date
+    const heading = lines[0] || ""; // First line as heading
+    const savedDate = lines[1] || ""; // Second line as saved date
+    const messageLines = lines.slice(2); // Remaining lines for processing messages
+
+    console.log("Heading:", heading);
+    console.log("Saved Date:", savedDate);
+    console.log("Message Lines:", messageLines);
+
     const messagesByDate: Record<string, Set<string>> = {};
-    // const timestampRegex = /^\d{4}년 \d{1,2}월 \d{1,2}일/;
     const timestampRegex = /^\d{4}년 \d{1,2}월 \d{1,2}일( 오[전후] \d{1,2}:\d{2})?/;
 
-    lines.forEach((line) => {
+    messageLines.forEach((line) => {
       console.log("Processing line:", line);
       const match = line.match(timestampRegex);
       if (match) {
         const timestamp = match[0];
-        // const [date] = timestamp.split(" ");
         const date = timestamp;
         const message = line.replace(timestamp, "").trim();
 
@@ -73,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     console.log("Result:", result);
-    return res.status(200).json(result);
+    return res.status(200).json({ heading, savedDate, messages: result });
   } catch (error) {
     console.error("Error reading chat messages:", error);
     return res.status(500).json({ message: "Error reading chat messages" });
