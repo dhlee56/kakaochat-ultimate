@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import MessagesDisplay from "../components/MessagesDisplay";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -55,23 +56,11 @@ export default function Home() {
       <input type="file" accept=".zip" onChange={handleFileUpload} />
       <button onClick={handleDisplayMessages}>Display Chat Messages</button>
       <p>{message}</p>
-      <div>
-        {/* Display the heading */}
-        <h2>{chatData.heading}</h2>
-        {/* Display the saved date */}
-        <h3>{chatData.savedDate}</h3>
-        {/* Display the messages */}
-        {Object.entries(chatData.messages).map(([date, messages]) => (
-          <div key={date}>
-            <h3>{date}</h3>
-            <ul>
-              {messages.map((msg, index) => (
-                <li key={index}>{msg}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+      <MessagesDisplay
+        heading={chatData.heading}
+        savedDate={chatData.savedDate}
+        messages={chatData.messages}
+      />
     </div>
   );
 }
