@@ -61,7 +61,7 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                   <ul>
                     {entry.messages.map((group, groupIndex) => (
                       <li key={groupIndex}>
-                        {group.length > 1 && isImage(group[0]) ? (
+                        {group.length > 0 && isImage(group[0]) ? (
                           // Display grouped images in a grid
                           <div
                             style={{
