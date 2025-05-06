@@ -20,6 +20,16 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
 }) => {
   const isImage = (fileName: string) => /\.(jpg|jpeg|png|gif)$/i.test(fileName);
   const isVideo = (fileName: string) => /\.(mp4|webm|ogg)$/i.test(fileName);
+  const isURI = (text: string) => {
+    try {
+      // Remove characters before "http"
+      const cleanedText = text.substring(text.indexOf("http"));
+      const url = new URL(cleanedText);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
 
   // Construct the base path for the chat directory
   const basePath = `/unzipped/${chatFileName}/`;
@@ -37,53 +47,62 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
           <ul>
             {entries
               .filter((entry) => entry.author.trim() !== "Unknown") // Ignore entries with no author
-              .map((entry, index) => { 
-                // Check if the entry has messages
-                  console.log("Entry:", entry);
-                  return (
-                    <li key={index}>
-                      <strong>{entry.author}:</strong>
-                      <ul>
-                        {entry.messages.map((msg, msgIndex) => (
-                          <li key={msgIndex}>
-                            {isImage(msg) ? (
-                              <img
-                                src={`${basePath}${msg}`} // Prepend the base path to the message
-                                alt="Image"
-                                style={{
-                                  width: "10rem",
-                                  height: "10rem",
-                                  objectFit: "cover",
-                                }}
-                                onError={(e) => {
-                                  e.currentTarget.src = "/fallback-image.jpg"; // Optional fallback image
-                                  console.error(`Failed to load image: ${msg}`);
-                                }}
-                              />
-                            ) : isVideo(msg) ? (
-                              <video
-                                controls
-                                style={{ maxWidth: "100%" }}
-                                onError={() =>
-                                  console.error(`Failed to load video: ${msg}`)
-                                }
-                              >
-                                <source
-                                  src={`${basePath}${msg}`}
-                                  type={`video/${msg.split(".").pop()}`}
-                                />
-                                Your browser does not support the video tag.
-                              </video>
-                            ) : (
-                              msg
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
-                  ) 
-                }
-              )}
+              .map((entry, index) => (
+                <li key={index}>
+                  <strong>{entry.author}:</strong>
+                  <ul>
+                    {entry.messages.map((msg, msgIndex) => (
+                      <li key={msgIndex}>
+                        {isImage(msg) ? (
+                          <img
+                            src={`${basePath}${msg}`} // Prepend the base path to the message
+                            alt="Image"
+                            style={{
+                              width: "10rem",
+                              height: "10rem",
+                              objectFit: "cover",
+                            }}
+                            onError={(e) => {
+                              e.currentTarget.src = "/fallback-image.jpg"; // Optional fallback image
+                              console.error(`Failed to load image: ${msg}`);
+                            }}
+                          />
+                        ) : isVideo(msg) ? (
+                          <video
+                            controls
+                            style={{ maxWidth: "100%" }}
+                            onError={() =>
+                              console.error(`Failed to load video: ${msg}`)
+                            }
+                          >
+                            <source
+                              src={`${basePath}${msg}`}
+                              type={`video/${msg.split(".").pop()}`}
+                            />
+                            Your browser does not support the video tag.
+                          </video>
+                        ) : isURI(msg) ? (
+                          <button
+                            onClick={() => window.open(msg, "_blank")}
+                            style={{
+                              padding: "0.5rem 1rem",
+                              backgroundColor: "#007BFF",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "5px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Open Link
+                          </button>
+                        ) : (
+                          msg
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
           </ul>
         </div>
       ))}
