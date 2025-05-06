@@ -7,7 +7,7 @@ export default function Home() {
   const [fileName, setFileName] = useState("");
   const [filePath, setFilePath] = useState("");
   const [message, setMessage] = useState("");
-  const [chatData, setChatData] = useState<{ heading: string; savedDate: string; messages: Record<string, string[]> }>({
+  const [chatData, setChatData] = useState<{ heading: string; savedDate: string; messages: Record<string, { author: string; messages: string[] }[]> }>({
     heading: "",
     savedDate: "",
     messages: {},

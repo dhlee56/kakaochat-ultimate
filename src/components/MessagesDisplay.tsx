@@ -37,48 +37,53 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
           <ul>
             {entries
               .filter((entry) => entry.author.trim() !== "Unknown") // Ignore entries with no author
-              .map((entry, index) => (
-                <li key={index}>
-                  <strong>{entry.author}:</strong>
-                  <ul>
-                    {entry.messages.map((msg, msgIndex) => (
-                      <li key={msgIndex}>
-                        {isImage(msg) ? (
-                          <img
-                            src={`${basePath}${msg}`} // Prepend the base path to the message
-                            alt="Image"
-                            style={{
-                              width: "20rem",
-                              height: "20rem",
-                              objectFit: "cover",
-                            }}
-                            onError={(e) => {
-                              e.currentTarget.src = "/fallback-image.jpg"; // Optional fallback image
-                              console.error(`Failed to load image: ${msg}`);
-                            }}
-                          />
-                        ) : isVideo(msg) ? (
-                          <video
-                            controls
-                            style={{ maxWidth: "100%" }}
-                            onError={() =>
-                              console.error(`Failed to load video: ${msg}`)
-                            }
-                          >
-                            <source
-                              src={`${basePath}${msg}`}
-                              type={`video/${msg.split(".").pop()}`}
-                            />
-                            Your browser does not support the video tag.
-                          </video>
-                        ) : (
-                          msg
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
+              .map((entry, index) => { 
+                // Check if the entry has messages
+                  console.log("Entry:", entry);
+                  return (
+                    <li key={index}>
+                      <strong>{entry.author}:</strong>
+                      <ul>
+                        {entry.messages.map((msg, msgIndex) => (
+                          <li key={msgIndex}>
+                            {isImage(msg) ? (
+                              <img
+                                src={`${basePath}${msg}`} // Prepend the base path to the message
+                                alt="Image"
+                                style={{
+                                  width: "10rem",
+                                  height: "10rem",
+                                  objectFit: "cover",
+                                }}
+                                onError={(e) => {
+                                  e.currentTarget.src = "/fallback-image.jpg"; // Optional fallback image
+                                  console.error(`Failed to load image: ${msg}`);
+                                }}
+                              />
+                            ) : isVideo(msg) ? (
+                              <video
+                                controls
+                                style={{ maxWidth: "100%" }}
+                                onError={() =>
+                                  console.error(`Failed to load video: ${msg}`)
+                                }
+                              >
+                                <source
+                                  src={`${basePath}${msg}`}
+                                  type={`video/${msg.split(".").pop()}`}
+                                />
+                                Your browser does not support the video tag.
+                              </video>
+                            ) : (
+                              msg
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ) 
+                }
+              )}
           </ul>
         </div>
       ))}

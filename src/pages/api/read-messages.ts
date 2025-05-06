@@ -69,7 +69,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const remainingLine = line.replace(timestamp, "").trim();
 
         const authorMatch = remainingLine.match(authorRegex);
-        const author = authorMatch ? authorMatch[1].trim() : "Unknown";
+        let author = authorMatch ? authorMatch[1].trim() : "Unknown";
+
+        author = author.replace(/,/, "");
+
         const message = remainingLine.replace(authorRegex, "").trim();
 
         if (!messagesByDate[date]) {
