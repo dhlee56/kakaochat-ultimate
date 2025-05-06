@@ -4,6 +4,8 @@ import { useState } from "react";
 import MessagesDisplay from "../components/MessagesDisplay";
 
 export default function Home() {
+  const [fileName, setFileName] = useState("");
+  const [filePath, setFilePath] = useState("");
   const [message, setMessage] = useState("");
   const [chatData, setChatData] = useState<{ heading: string; savedDate: string; messages: Record<string, string[]> }>({
     heading: "",
@@ -17,18 +19,27 @@ export default function Home() {
 
     const formData = new FormData();
     formData.append("file", file);
-
+    console.log("fileName", file.name);
+    const removeExtension = (fileName: string) => {
+      return fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
+    };
+    setFileName(removeExtension(file.name));
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
 
-      if (response.ok) {
-        setMessage("File uploaded and unzipped successfully!");
-      } else {
-        setMessage("Failed to upload or unzip the file.");
-      }
+      console.log("api/upload response", response)
+      const responseData = await response.json()
+      setMessage(responseData.message)
+      setFilePath(responseData.filePath)     
+      console.log("api/upload responseData", responseData)
+      // if (response.ok) {
+      //   setMessage("File uploaded and unzipped successfully!");
+      // } else {
+      //   setMessage("Failed to upload or unzip the file.");
+      // }
     } catch (error) {
       console.error("Error uploading file:", error);
       setMessage("An error occurred during the upload.");
@@ -60,7 +71,17 @@ export default function Home() {
         heading={chatData.heading}
         savedDate={chatData.savedDate}
         messages={chatData.messages}
+        chatFileName={fileName}
+        unzipFilePath={filePath}
       />
+      <div>
+        <h2>File Name:</h2>
+        <p>{fileName}</p>
+      </div>
+      <div>
+        <h2>File Path:</h2>
+        <p>{filePath}</p>
+      </div>
     </div>
   );
 }

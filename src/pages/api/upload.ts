@@ -69,11 +69,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // --- Process the Uploaded File ---
     let uploadedFilePath = file.filepath;
 
+    console.log("Uploaded file path:", uploadedFilePath);
+    console.log("Uploaded file name:", file.originalFilename);
+
     try {
       const zip = new AdmZip(uploadedFilePath);
       zip.extractAllTo(extractPath, /*overwrite*/ true);
+      console.log("Files extracted to:", extractPath);
 
-      res.status(200).json({ message: "File uploaded and unzipped successfully." });
+      res.status(200).json({ message: "File uploaded and unzipped successfully.", filePath: extractPath });
 
     } catch (processingError) {
       console.error("Error processing the zip file:", processingError);
