@@ -52,39 +52,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log("Saved Date:", savedDate);
     console.log("Message Lines:", messageLines);
 
-    const messagesByDate: Record<string, Set<string>> = {};
+    const messagesByDate: Record<string, { author: string; messages: Set<string> }[]> = {};
     const timestampRegex = /^\d{4}년 \d{1,2}월 \d{1,2}일( 오[전후] \d{1,2}:\d{2})?/;
+    const authorRegex = /^(.*?):/; // Regex to extract the author (e.g., "Author:")
 
-    let currentDate: string | null = null; // Variable to track the current date
-    let currentMessage: string | null = null; // Variable to track the current message
+    let currentDate: string | null = null;
 
     messageLines.forEach((line) => {
       console.log("Processing line:", line);
-      const match = line.match(timestampRegex);
+      const timestampMatch = line.match(timestampRegex);
 
-      if (match) {
+      if (timestampMatch) {
         // Line contains a timestamp
-        const timestamp = match[0];
+        const timestamp = timestampMatch[0];
         const date = timestamp;
-        const message = line.replace(timestamp, "").trim();
+        const remainingLine = line.replace(timestamp, "").trim();
+
+        const authorMatch = remainingLine.match(authorRegex);
+        const author = authorMatch ? authorMatch[1].trim() : "Unknown";
+        const message = remainingLine.replace(authorRegex, "").trim();
 
         if (!messagesByDate[date]) {
-          messagesByDate[date] = new Set();
+          messagesByDate[date] = [];
         }
 
-        // Add the message to the current date's record
-        messagesByDate[date].add(message);
+        // Add the message with the author to the current date's record
+        messagesByDate[date].push({ author, messages: new Set([message]) });
 
-        // Update the current date and message
+        // Update the current date
         currentDate = date;
-        currentMessage = message;
       } else if (currentDate) {
         // Line does not contain a timestamp, add it as a new message
         const newMessage = line.trim();
 
         if (newMessage) {
-          // Add the new message to the current date's record
-          messagesByDate[currentDate].add(newMessage);
+          // Add the new message to the last author's messages for the current date
+          const lastEntry = messagesByDate[currentDate][messagesByDate[currentDate].length - 1];
+          lastEntry.messages.add(newMessage);
         }
       }
     });
@@ -93,7 +97,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Convert Set to Array for JSON serialization
     const result = Object.fromEntries(
-      Object.entries(messagesByDate).map(([date, messages]) => [date, Array.from(messages)])
+      Object.entries(messagesByDate).map(([date, entries]) => [
+        date,
+        entries.map(({ author, messages }) => ({
+          author,
+          messages: Array.from(messages),
+        })),
+      ])
     );
 
     console.log("Result:", result);
