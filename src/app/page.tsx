@@ -48,7 +48,7 @@ export default function Home() {
 
   const handleDisplayMessages = async () => {
     try {
-      const response = await fetch("/api/read-messages");
+      const response = await fetch(`/api/read-messages?fileName=${fileName}`);
       if (response.ok) {
         const data = await response.json();
         setChatData(data); // Update state with the new structure

@@ -10,19 +10,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     res.setHeader("Cache-Control", "no-store");
 
-    const unzippedDir = path.join(process.cwd(), "public/unzipped");
+    const { fileName } = req.query;
 
-    // Find the first directory inside the unzipped directory
-    const directories = fs.readdirSync(unzippedDir).filter((file) => {
-      const fullPath = path.join(unzippedDir, file);
-      return fs.statSync(fullPath).isDirectory();
-    });
-
-    if (directories.length === 0) {
-      return res.status(404).json({ message: "No chat directory found in the unzipped directory" });
+    if (!fileName || typeof fileName !== "string") {
+      return res.status(400).json({ message: "File name is required" });
     }
 
-    const chatDir = path.join(unzippedDir, directories[0]);
+    const unzippedDir = path.join(process.cwd(), "public/unzipped");
+    const chatDir = path.join(unzippedDir, fileName);
+
+    // Check if the directory exists
+    if (!fs.existsSync(chatDir) || !fs.statSync(chatDir).isDirectory()) {
+      return res.status(404).json({ message: `Chat directory '${fileName}' not found in the unzipped directory` });
+    }
 
     console.log("Chat directory:", chatDir);
 
@@ -102,10 +102,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const result = Object.fromEntries(
       Object.entries(messagesByDate).map(([date, entries]) => [
         date,
-        entries.map(({ author, messages }) => ({
-          author,
-          messages: Array.from(messages),
-        })),
+        entries
+          .filter(({ author }) => author.trim() !== "Unknown") // Ignore entries with no author
+          .map(({ author, messages }) => ({
+            author,
+            messages: Array.from(messages),
+          })),
       ])
     );
 
