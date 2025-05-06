@@ -1,5 +1,4 @@
 import groupMessages from "@/utils/groupMessages";
-import { group } from "console";
 import React from "react";
 
 interface MessagesDisplayProps {
@@ -24,7 +23,6 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   const isVideo = (fileName: string) => /\.(mp4|webm|ogg)$/i.test(fileName);
   const isURI = (text: string) => {
     try {
-      // Remove characters before "http"
       const cleanedText = text.substring(text.indexOf("http"));
       const url = new URL(cleanedText);
       return url.protocol === "http:" || url.protocol === "https:";
@@ -33,14 +31,14 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
     }
   };
 
-  const groupedMessages: Record<string, { author: string; messages: Set<string[]> }[]> = {};
+  const groupedMessages: Record<string, { author: string; messages: string[][] }[]> = {};
   const basePath = `/unzipped/${chatFileName}/`;
+
+  // Group messages by date and author
   Object.entries(messages).forEach(([date, entries]) => {
     groupedMessages[date] = entries.map((entry) => ({
       author: entry.author,
-      messages: new Set(
-        groupMessages(entry.messages)
-      ), 
+      messages: groupMessages(entry.messages), // Use the groupMessages utility function
     }));
   });
 
@@ -50,8 +48,8 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
       <h2>{heading}</h2>
       {/* Display the saved date */}
       <h3>{savedDate}</h3>
-      {/* Display the messages */}
-      {Object.entries(messages).map(([date, entries]) => (
+      {/* Display the grouped messages */}
+      {Object.entries(groupedMessages).map(([date, entries]) => (
         <div key={date}>
           <h3>{date}</h3>
           <ul>
@@ -61,39 +59,38 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                 <li key={index}>
                   <strong>{entry.author}:</strong>
                   <ul>
-                    {entry.messages.map((msg, msgIndex) => (
-                      <li key={msgIndex}>
-                        {isImage(msg) ? (
-                          <img
-                            src={`${basePath}${msg}`} // Prepend the base path to the message
-                            alt="Image"
+                    {entry.messages.map((group, groupIndex) => (
+                      <li key={groupIndex}>
+                        {group.length > 1 && isImage(group[0]) ? (
+                          // Display grouped images in a grid
+                          <div
                             style={{
-                              width: "10rem",
-                              height: "10rem",
-                              objectFit: "cover",
+                              display: "grid",
+                              gridTemplateColumns: "repeat(auto-fill, minmax(10rem, 1fr))",
+                              gap: "1rem",
                             }}
-                            onError={(e) => {
-                              e.currentTarget.src = "/fallback-image.jpg"; // Optional fallback image
-                              console.error(`Failed to load image: ${msg}`);
-                            }}
-                          />
-                        ) : isVideo(msg) ? (
-                          <video
-                            controls
-                            style={{ maxWidth: "100%" }}
-                            onError={() =>
-                              console.error(`Failed to load video: ${msg}`)
-                            }
                           >
-                            <source
-                              src={`${basePath}${msg}`}
-                              type={`video/${msg.split(".").pop()}`}
-                            />
-                            Your browser does not support the video tag.
-                          </video>
-                        ) : isURI(msg) ? (
+                            {group.map((img, imgIndex) => (
+                              <img
+                                key={imgIndex}
+                                src={`${basePath}${img}`}
+                                alt="Image"
+                                style={{
+                                  width: "100%",
+                                  height: "10rem",
+                                  objectFit: "cover",
+                                }}
+                                onError={(e) => {
+                                  e.currentTarget.src = "/fallback-image.jpg";
+                                  console.error(`Failed to load image: ${img}`);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        ) : group.length === 1 && isURI(group[0]) ? (
+                          // Display URI as a button
                           <button
-                            onClick={() => window.open(msg, "_blank")}
+                            onClick={() => window.open(group[0], "_blank")}
                             style={{
                               padding: "0.5rem 1rem",
                               backgroundColor: "#007BFF",
@@ -106,7 +103,8 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                             Open Link
                           </button>
                         ) : (
-                          msg
+                          // Display text or single messages
+                          group.map((msg, msgIndex) => <span key={msgIndex}>{msg}</span>)
                         )}
                       </li>
                     ))}
