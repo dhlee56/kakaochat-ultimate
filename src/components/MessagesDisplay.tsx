@@ -1,3 +1,5 @@
+import groupMessages from "@/utils/groupMessages";
+import { group } from "console";
 import React from "react";
 
 interface MessagesDisplayProps {
@@ -31,8 +33,16 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
     }
   };
 
-  // Construct the base path for the chat directory
+  const groupedMessages: Record<string, { author: string; messages: Set<string[]> }[]> = {};
   const basePath = `/unzipped/${chatFileName}/`;
+  Object.entries(messages).forEach(([date, entries]) => {
+    groupedMessages[date] = entries.map((entry) => ({
+      author: entry.author,
+      messages: new Set(
+        groupMessages(entry.messages)
+      ), 
+    }));
+  });
 
   return (
     <div>
