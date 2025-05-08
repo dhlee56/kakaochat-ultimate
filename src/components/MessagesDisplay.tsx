@@ -43,11 +43,34 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   });
 
   return (
-    <div>
+    <div
+      style={{
+        marginLeft: "20px", // Add left margin
+        marginRight: "20px", // Add right margin
+      }}
+    >
       {/* Display the heading */}
-      <h2>{heading}</h2>
+      <h2
+        style={{
+          textAlign: "center",
+          fontSize: "2rem", // Increased font size
+          fontWeight: "bold", // Made font bolder
+          margin: "20px 0 5px", // Reduced bottom margin to 5px
+        }}
+      >
+        {heading}
+      </h2>
       {/* Display the saved date */}
-      <h3>{savedDate}</h3>
+      <h3
+        style={{
+          textAlign: "center",
+          fontSize: "1.2rem", // Slightly increased font size
+          color: "#555", // Softer color for the date
+          marginBottom: "25px", // Added margin below
+        }}
+      >
+        {savedDate}
+      </h3>
       {/* Display the grouped messages */}
       {Object.entries(groupedMessages).map(([date, entries]) => (
         <div key={date}>
