@@ -61,27 +61,44 @@ export default function Home() {
     }
   };
 
+  const areMessagesDisplayed = Object.keys(chatData.messages).length > 0;
+
   return (
-    <div>
-      <h1>Upload and Unzip</h1>
-      <input type="file" accept=".zip" onChange={handleFileUpload} />
-      <button onClick={handleDisplayMessages}>Display Chat Messages</button>
-      <p>{message}</p>
-      <MessagesDisplay
-        heading={chatData.heading}
-        savedDate={chatData.savedDate}
-        messages={chatData.messages}
-        chatFileName={fileName}
-        unzipFilePath={filePath}
-      />
-      <div>
-        <h2>File Name:</h2>
-        <p>{fileName}</p>
-      </div>
-      <div>
-        <h2>File Path:</h2>
-        <p>{filePath}</p>
-      </div>
+    <div>  
+      {!areMessagesDisplayed && (
+        <>
+          <h1>Upload and Unzip</h1>
+          <input type="file" accept=".zip" onChange={handleFileUpload} />
+          <button onClick={handleDisplayMessages} disabled={!fileName}>
+            Display Chat Messages
+          </button>
+          {message && <p>{message}</p>}
+        </>
+      )}
+      
+      {fileName && !areMessagesDisplayed && (
+        <>
+          <div>
+            <h2>File Name:</h2>
+            <p>{fileName}</p>
+          </div>
+            <div>
+            <h2>File Path:</h2>
+            <p>{filePath}</p>
+        </div>
+        </>
+        
+      )}
+
+      {areMessagesDisplayed && (
+        <MessagesDisplay
+          heading={chatData.heading}
+          savedDate={chatData.savedDate}
+          messages={chatData.messages}
+          chatFileName={fileName}
+          unzipFilePath={filePath}
+        />
+      )}
     </div>
   );
 }

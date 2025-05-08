@@ -91,16 +91,21 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
                           // Display URI as a button
                           <button
                             onClick={() => window.open(group[0], "_blank")}
+                            title={`Open link: ${group[0]}`} // Added title for better UX
                             style={{
-                              padding: "0.5rem 1rem",
+                              padding: "0.25rem 0.75rem", // Reduced padding
                               backgroundColor: "#007BFF",
                               color: "#fff",
                               border: "none",
                               borderRadius: "5px",
                               cursor: "pointer",
+                              maxWidth: "100%", // Ensure button doesn't overflow
+                              overflow: "hidden", // Hide overflow
+                              textOverflow: "ellipsis", // Add ellipsis for long URIs
+                              whiteSpace: "nowrap", // Prevent wrapping
                             }}
                           >
-                            Open Link
+                            {group[0]} {/* Display the URI */}
                           </button>
                         ) : (
                           // Display text or single messages
