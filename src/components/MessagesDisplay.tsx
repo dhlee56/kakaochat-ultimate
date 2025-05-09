@@ -1,6 +1,11 @@
 import groupMessages from "@/utils/groupMessages";
 import React from "react";
-
+import Link from "next/link"; // Import Link for navigation
+type ChatDataType = {
+  heading: string;
+  savedDate: string;
+  messages: Record<string, { author: string; messages: string[] }[]>;
+};
 interface MessagesDisplayProps {
   heading: string;
   savedDate: string;
@@ -8,16 +13,16 @@ interface MessagesDisplayProps {
     string,
     { author: string; messages: string[] }[]
   >; // Updated structure to match API response
-  unzipFilePath: string; // Path to the unzipped directory
   chatFileName: string; // Name of the chat directory
+  setChatData?: React.Dispatch<React.SetStateAction<ChatDataType>>;
 }
 
 const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
   heading,
   savedDate,
   messages,
-  unzipFilePath,
   chatFileName,
+  setChatData, // Optional prop to set chat data
 }) => {
   const isImage = (fileName: string) => /\.(jpg|jpeg|png|gif)$/i.test(fileName);
   const isVideo = (fileName: string) => /\.(mp4|webm|ogg)$/i.test(fileName);
@@ -49,6 +54,33 @@ const MessagesDisplay: React.FC<MessagesDisplayProps> = ({
         marginRight: "20px", // Add right margin
       }}
     >
+      {/* Back to Home Button */}
+      <div style={{ position: "absolute", top: "20px", left: "20px" }}>
+        <Link href="/" passHref>
+          <button
+            aria-label="Back to Home"
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: "1.5rem", // Adjust size as needed
+              cursor: "pointer",
+              padding: "5px",
+            }}
+            onClick ={() => {
+              if (setChatData) {
+                setChatData({
+                  heading: "",
+                  savedDate: "",
+                  messages: {},
+                });
+              }
+            }}
+          >
+            &larr; {/* Left arrow character */}
+          </button>
+        </Link>
+      </div>
+
       {/* Display the heading */}
       <h2
         style={{

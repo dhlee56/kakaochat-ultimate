@@ -158,7 +158,7 @@ export default function Home() {
           savedDate={chatData.savedDate}
           messages={chatData.messages}
           chatFileName={fileName}
-          unzipFilePath={filePath}
+          setChatData={setChatData} // Pass setChatData to MessagesDisplay
         />
       )}
     </div>
